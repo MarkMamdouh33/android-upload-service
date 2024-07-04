@@ -143,12 +143,12 @@ abstract class UploadTask : Runnable {
                 resetUploadedBytes()
                 upload(UploadServiceConfig.httpStack)
                 break
-            } catch (exc: Throwable) {
+            } catch (exc: Exception) {
                 if (!shouldContinue) {
                     UploadServiceLogger.error(TAG, params.id, exc) { "error while uploading but user requested cancellation." }
                     break
                 } else if (attempts >= params.maxRetries) {
-                    onError(exc)
+                    onError(UploadThrowable(message = "", httpMethod = params.httpMethod, exception = exc))
                 } else {
                     UploadServiceLogger.error(TAG, params.id, exc) { "error on attempt ${attempts + 1}. Waiting ${errorDelay}s before next attempt." }
 
@@ -234,7 +234,7 @@ abstract class UploadTask : Runnable {
                     uploadInfo,
                     notificationId,
                     notificationConfig,
-                    UploadError(response)
+                    UploadError(params.httpMethod)
                 )
             }
         }
@@ -251,7 +251,7 @@ abstract class UploadTask : Runnable {
      */
     private fun onUserCancelledUpload() {
         UploadServiceLogger.debug(TAG, params.id) { "upload cancelled" }
-        onError(UserCancelledUploadException())
+        onError(UserCancelledUploadException(params.httpMethod))
     }
 
     /**
@@ -263,7 +263,7 @@ abstract class UploadTask : Runnable {
      * @param exception exception to broadcast. It's the one thrown by the specific implementation
      * of [UploadTask.upload]
      */
-    private fun onError(exception: Throwable) {
+    private fun onError(exception: UploadThrowable) {
         UploadServiceLogger.error(TAG, params.id, exception) { "error" }
         uploadInfo.let {
             doForEachObserver { onError(it, notificationId, notificationConfig, exception) }

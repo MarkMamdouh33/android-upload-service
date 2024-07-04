@@ -27,8 +27,12 @@ data class ServerResponse(
 
     /**
      * server response headers
+    */
+    val headers: LinkedHashMap<String, String>,
+    /**
+     * http method such as POST, PUT, .. and so on
      */
-    val headers: LinkedHashMap<String, String>
+    var httpMethod: String
 ) : Parcelable, Serializable {
 
     /**
@@ -50,7 +54,8 @@ data class ServerResponse(
             return ServerResponse(
                 code = 200,
                 body = ByteArray(1),
-                headers = LinkedHashMap()
+                headers = LinkedHashMap(),
+                httpMethod = ""
             )
         }
     }
