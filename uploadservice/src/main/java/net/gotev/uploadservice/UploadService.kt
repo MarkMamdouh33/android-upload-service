@@ -159,7 +159,11 @@ class UploadService : Service() {
         }
 
         if (uploadId == foregroundUploadId) {
-            startForeground(UPLOAD_NOTIFICATION_BASE_ID, notification)
+            try {
+                startForeground(UPLOAD_NOTIFICATION_BASE_ID, notification)
+            } catch (exception: Exception) {
+                stopSelf()
+            }
             return true
         }
 
@@ -224,7 +228,11 @@ class UploadService : Service() {
 
         val notification = builder.build()
 
-        startForeground(UPLOAD_NOTIFICATION_BASE_ID, notification)
+        try {
+            startForeground(UPLOAD_NOTIFICATION_BASE_ID, notification)
+        } catch (exception: Exception) {
+            stopSelf()
+        }
 
         val taskCreationParameters = intent.getUploadTaskCreationParameters()
             ?: return shutdownIfThereArentAnyActiveTasks()
